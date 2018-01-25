@@ -1,11 +1,15 @@
 #!/usr/bin/env Rscript
 
+### RScript for DiffBind analysis of ATAC data. 
+# This is designed to create all sample contrasts as permitted by the sample sheet.
+# Currently uses DESEQ2 at the backend, with blocking model for batches. Could contrast with EdgeR.
+
 # Package loading
 library(DiffBind)
 library(rtracklayer)
 
 # Argument loading - Should direct to samples file
-args = commandArgs(trailingOnly=TRUE)
+args = commandArgs(trailingOnly=TRUE)  # Command allows us to specify file using RScript on cmd line
 SampleFile <- args[1]
 
 # Create pathways and load required data
@@ -36,7 +40,6 @@ pdf("DiffBind_Output/CorrelationHeatmap_Affinity-ReadCount.pdf",8,8)
 dev.off()
 
 ##### QC Graphs #####
-
 pdf("DiffBind_Output/PCA_Plots.pdf",8,8)
   dba.plotPCA(expData, DBA_TISSUE)
   dba.plotPCA(expData, DBA_FACTOR)
@@ -45,6 +48,10 @@ pdf("DiffBind_Output/PCA_Plots.pdf",8,8)
 dev.off()
 
 ##### Contrast establishment - Factor flagging #####
+# This works by checking how many different unique names are entered in each Sample sheet column. 
+# 1 means no contrast to perform, 2 means a pairwise contrast, >2 means a complex analysis is required.
+# FACTOR is reserved for batch conditions, to use for DESEQ2 blocking
+
 Comps <- 0
 
 if(length(unique(samples$Tissue)) == 2){
@@ -101,12 +108,6 @@ if(FLAG_TISSUE == TRUE){
   listComps[[1]] <- dba.contrast(expData, minMembers = Tissue_min, categories = DBA_TISSUE, block=DBA_FACTOR)
 }else{listComps[[1]] <- FALSE}
 
-#if(FLAG_FACTOR == TRUE){
-#  listComps[[2]] <- dba.contrast(expData, categories=DBA_FACTOR)
-#}else if(FLAG_FACTOR == "Complex"){
-#  listComps[[2]] <- dba.contrast(expData, minMembers = Factor_min, categories = DBA_FACTOR)
-#}else{listComps[[2]] <- FALSE}
-
 if(FLAG_CONDITION == TRUE){
   listComps[[3]] <- dba.contrast(expData, categories=DBA_CONDITION, block=DBA_FACTOR)
 }else if(FLAG_CONDITION == "Complex"){
@@ -121,8 +122,10 @@ if(FLAG_TREATMENT == TRUE){
 
 ##### Performing Analysis #####
 mapply(function(contrast, names){
+  
   if(class(contrast) != "DBA"){
     return(FALSE)
+    
   }else{
     dirOut <- paste("./DiffBind_Output/", names, sep="")
     dir.create(file.path(dirOut), showWarnings = FALSE)
