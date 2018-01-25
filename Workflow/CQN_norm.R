@@ -1,11 +1,15 @@
-source("http://bioconductor.org/biocLite.R")
-biocLite("cqn")
+### Script for CQN normalisation
+# Designed to normalise the peak coverage datasets (i.e, where we count the number of reads found within each peak-called genomic region)
+
+### We may want to switch to using the Norm+offset
+
+# Load packages & data
 library(cqn)
 library(gplots)
 
 df <- read.table("./peaks_coverage/allPeaksCoverage.txt", sep="\t", header = T)
 
-# Import GC table
+# Extract GC content
 GC <- df[,5]
 
 # CQN normalisation
@@ -22,9 +26,10 @@ libs <- data.frame(apply(df[,-c(1:5)],2,sum), apply(tblCQN$y, 2, sum), apply(tbl
 colnames(libs) <- c("Un normalised", "Normalised", "Norm + offset")
 print(libs)
 
-#Correlation
+# Correlation
 x <- as.matrix(tblCQN$y)
 rownames(x) <- df[,4]
+
 y <- as.matrix(data.frame(df[,1:5], tblCQN$y))
 write.table(y, "./peaks_coverage/allPeaksCoverage_CQN.txt", quote=F, row.names=F, sep="\t")
 
