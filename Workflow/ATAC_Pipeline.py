@@ -213,12 +213,13 @@ for group in groupListSet:
 	newBam = './' + group + '_combined.bam'
 	
 	os.system('samtools merge ' + newBam + ' ' + ' '.join(bamFiles) )
-
+	
+	# Try replacing resample w/ Deeptools norm.
+	#os.system('bamCompare -b1 ' + newBam + ' -b2 /t1-data/user/jharman/Scripts/Background_ATAC_mouse_Merge_Sorted.bam -o log2ratio.bw --scaleFactorsMethod readCount --ratio ratio --binSize 30 --ignoreForNormalization chrX chrM --bl /t1-data/user/jharman/Scripts/Full_blacklist_clip_FINAL.bed --skipNAs')
+	
+	# Should then require Bam to bigwig normalisation (Try manually first, then flesh out code and commit)
+	
 os.system('resample2.pl -outdir ./reads_normalised/ -rows ' + args.downsample + ' -properlypaired -build mm9') # Get read counts with samtools view -c ./reads/YS_E9_EMP_1.bam
 
 print('COMPLETE!\n\n')
-
-
-### next is deeptools normalisation
-### bamCompare -b1 treatment.bam -b2 /t1-data/user/jharman/Scripts/Background_ATAC_mouse_Merge_Sorted.bam -o log2ratio.bw
 
