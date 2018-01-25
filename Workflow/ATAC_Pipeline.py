@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-### 13/11/2017
-### Processing ATAC output
-### Joe Harman
-
+### 15/01/18
+### In house workflow for ATACseq data processing
+# This workflow is for after peak-calling
 # Of note - different sample sheets for intersections and DiffBind. This allows us to specify biological replicates for DiffBind, and technical replicates for intersecting!
 
 #####################
@@ -43,6 +42,9 @@ args = parser.parse_args()
 """
 PreProcessing
 """
+
+### Should be more verbose to disclose all parameters used
+
 os.system("mkdir -p ./reads_normalised")
 os.system("mkdir -p ./peaks_coverage")
 os.system("mkdir -p ./tmp")
@@ -59,6 +61,11 @@ groupList = []
 goldStandardList = []
 readCountList = []
 cwd = os.getcwd()
+
+
+"""
+Convert to bed files and merge peaks
+"""
 
 with open(args.s,'r') as f:
 	next(f) # skip headings
@@ -81,11 +88,11 @@ with open(args.s,'r') as f:
 		bedList.append(fbedMerge)    
 		
 		
-    
+# Print samples
+
 groupListSet = set(groupList)
 minCount = min(readCountList)
 x = [bedList, peakList, bamList, groupList]
-
 
 print('\n\nSample Data:\n\n')
 for v in zip(*x):
