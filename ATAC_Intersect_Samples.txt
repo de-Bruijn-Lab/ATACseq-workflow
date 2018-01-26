@@ -1,0 +1,10 @@
+Group	Peak	Bam	ReadCounts
+WT	/PATH/TO/WT_1_peaks.narrowPeak	/PATH/TO/WT_1.bam	6624696
+WT	/PATH/TO/WT_2_peaks.narrowPeak	/PATH/TO/WT_2.bam	10880566
+WT	/PATH/TO/WT_3_peaks.narrowPeak	/PATH/TO/WT_3.bam	8040404
+WT	/PATH/TO/WT_4_peaks.narrowPeak	/PATH/TO/WT_4.bam	8546760
+MUT	/PATH/TO/MUT_1_peaks.narrowPeak	/PATH/TO/MUT_1.bam	9089356
+MUT	/PATH/TO/MUT_2_peaks.narrowPeak	/PATH/TO/MUT_2.bam	5979144
+MUT	/PATH/TO/MUT_3_peaks.narrowPeak	/PATH/TO/MUT_3.bam	4648806
+MUT	/PATH/TO/MUT_4_peaks.narrowPeak	/PATH/TO/MUT_4.bam	8637608
+
