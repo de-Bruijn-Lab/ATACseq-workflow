@@ -31,11 +31,7 @@ parser.add_argument(
 	help = 'Required. Specify the Samples.csv to be used. must conform to DiffBind format. Note - Factor column is used for batches by my script!.',
 	required = True
 )
-parser.add_argument(
-	'-downsample',
-	help = 'Required. Specify the number of reads to downsample the COMBINED bam files to. use "samtools view -c sample.bam" to find counts for each file, and add up replicates. Downsample to lowest value!.',
-	required = True
-)
+
 
 args = parser.parse_args()
 
@@ -168,14 +164,14 @@ for bam in bamList:
 	os.system('paste ./peaks_coverage/allPeaksCoverage.txt ./tmp/tmp.txt > ./tmp/tmp2.txt' )
 	os.system('cat ./tmp/tmp2.txt > ./peaks_coverage/allPeaksCoverage.txt')
 	
-os.system('Rscript /t1-data/user/jharman/Scripts/CQN_norm.R')
+os.system('Rscript /t1-data/user/jharman/Scripts/ATACseq/CQN_norm.R')
 
 """
 DiffBind
 """
 
 print("\n\nProcessing data with DiffBind (R)")
-os.system("Rscript /t1-data/user/jharman/ATACseq_Workflow/DiffBind.R " + args.sDB)
+os.system("Rscript /t1-data/user/jharman/Scripts/ATACseq/DiffBind.R " + args.sDB)
 print("DiffBind processing complete!")
 
 flags = []
@@ -203,23 +199,26 @@ for f in os.listdir("./DiffBind_Results"):
 	merged = a.merge(b, on='PeakID')
 	merged.to_csv("./DiffBind_Results/" + os.path.splitext(f)[0] + "_annotated_merged.csv", index=False)
 
+
 """
 Bam normalisation
 """
-print('Downsampling bam files\n\n')
+print('Normalising bam files\n\n')
+os.system("mkdir -p ./reads_normalised")
 
 for group in groupListSet:
 	bamFiles = [bam for g, bam in zip(groupList, bamList) if group in g]
-	newBam = './' + group + '_combined.bam'
+	newBam = './reads_normalised/' + group + '_combined.bam'
+	newBamSort = './reads_normalised/' + group + '_combined.sorted.bam'
+	newBamBW = './reads_normalised/' + group + '_combined.sorted.bw'
 	
 	os.system('samtools merge ' + newBam + ' ' + ' '.join(bamFiles) )
+	os.system('samtools sort ' + newBam + ' > ' + newBamSort)
+	os.system('samtools index ' + newBamSort)
 	
-	# Try replacing resample w/ Deeptools norm.
-	#os.system('bamCompare -b1 ' + newBam + ' -b2 /t1-data/user/jharman/Scripts/Background_ATAC_mouse_Merge_Sorted.bam -o log2ratio.bw --scaleFactorsMethod readCount --ratio ratio --binSize 30 --ignoreForNormalization chrX chrM --bl /t1-data/user/jharman/Scripts/Full_blacklist_clip_FINAL.bed --skipNAs')
+	os.system('bamCompare -b1 ' + newBamSort + ' -b2 /t1-data/user/jharman/Scripts/Background_ATAC_mouse_Merge_Sorted.bam -o ' + newBamBW + ' --scaleFactorsMethod readCount --ratio ratio --binSize 1 --ignoreForNormalization chrX chrM --bl /t1-data/user/jharman/Scripts/Full_blacklist_clip_FINAL.bed --skipNAs')
 	
-	# Should then require Bam to bigwig normalisation (Try manually first, then flesh out code and commit)
 	
-os.system('resample2.pl -outdir ./reads_normalised/ -rows ' + args.downsample + ' -properlypaired -build mm9') # Get read counts with samtools view -c ./reads/YS_E9_EMP_1.bam
 
 print('COMPLETE!\n\n')
 
